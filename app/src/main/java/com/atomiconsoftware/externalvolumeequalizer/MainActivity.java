@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
+import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
@@ -194,7 +195,7 @@ public class MainActivity extends ActionBarActivity {
         editor.putInt("maxVolume", maxVolume);
         editor.putInt("threshold", threshold);
 
-        meter.stop();
+//        meter.stop();
 
         // Commit the edits!
         editor.apply();
@@ -222,6 +223,12 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public double ConvertAmplitudeToDecibel(double amplitude){
+        double max = MediaRecorder.getAudioSourceMax();
+        double dB = 20 * Math.log10(amplitude / 32767);
+        return dB;
+    }
+
     private class AsyncMeter extends AsyncTask<String, Void, String> {
         protected String doInBackground(String... params){
             return Double.toString(meter.getAmplitude());
@@ -245,8 +252,9 @@ public class MainActivity extends ActionBarActivity {
                 amplitudeCount++;
                 totalAmplitude += Double.parseDouble(result);
                 averageAmplitude = totalAmplitude / amplitudeCount;
-                tv.setText("Current Amplitude:  \t\t" + String.format("%.2f", Double.parseDouble(result)));
-                aTv.setText("Average Amplitude: \t\t" + String.format("%.2f", averageAmplitude));
+                tv.setText("Current Amplitude:  \t\t" + String.format("%2.2f", Double.parseDouble(result)) + " " +
+                    String.format("/ %2.2fdB ", ConvertAmplitudeToDecibel(Double.parseDouble(result))));
+                aTv.setText("Average Amplitude: \t\t" + String.format("%2.2f", averageAmplitude));
 
                 setVolume();
             }

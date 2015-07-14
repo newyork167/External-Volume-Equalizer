@@ -8,7 +8,7 @@ import java.io.IOException;
  * Created by Newyork167 on 7/13/15.
  */
 public class SoundMeter {
-    private MediaRecorder mRecorder = null;
+    public MediaRecorder mRecorder = null;
 
     public void start() {
         if (mRecorder == null) {
