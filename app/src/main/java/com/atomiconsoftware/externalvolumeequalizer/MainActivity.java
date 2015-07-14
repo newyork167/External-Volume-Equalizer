@@ -29,16 +29,18 @@ public class MainActivity extends ActionBarActivity {
     protected double averageAmplitude;
     protected double totalAmplitude;
     protected long amplitudeCount;
-    protected int minVolume = 5;
-    protected int maxVolume = 20;
+    protected int minVolume;
+    protected int maxVolume;
     protected SeekBar seekBar;
     protected double previousAmplitude = 0;
     protected double currentAmplitude;
     protected Button resetAverageButton;
     protected Button onOffButton;
     protected boolean onOff = true;
-    protected SeekBar refreshRateSeekBar;
+    protected SeekBar maxVolumeSeekBar;
     protected int refreshRate = 250;
+    protected SeekBar amplitudeThresholdSeekBar;
+    protected int threshold;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,16 +48,38 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        minVolume = settings.getInt("minimumVolume", 5);
 
-        refreshRateSeekBar = (SeekBar)findViewById(R.id.refreshRateSeekBar);
-        refreshRateSeekBar.setProgress(settings.getInt("refreshRate", 250));
-        refreshRateSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        threshold = settings.getInt("threshold", 250);
+        amplitudeThresholdSeekBar = (SeekBar)findViewById(R.id.amplitudeThresholdSeekBar);
+        amplitudeThresholdSeekBar.setProgress(threshold);
+        amplitudeThresholdSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                TextView thresholdTextView = (TextView) findViewById(R.id.amplitudeThresholdTextView);
+                thresholdTextView.setText("Amplitude Threshold: " + progress);
+                threshold = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        maxVolume = settings.getInt("maxVolume", 15);
+        maxVolumeSeekBar = (SeekBar)findViewById(R.id.maxVolumeSeekBar);
+        maxVolumeSeekBar.setProgress(maxVolume);
+        maxVolumeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 TextView refreshTextView = (TextView)findViewById(R.id.RefreshRateTextView);
-                refreshTextView.setText("Refresh Rate: " + Integer.toString(progress) + "ms");
-                refreshRate = progress;
+                refreshTextView.setText("Max Volume: " + Integer.toString(progress));
+                maxVolume = progress;
             }
 
             @Override
@@ -87,15 +111,13 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 onOff = !onOff;
-
                 onOffButton.setText(onOff ? "On" : "Off");
             }
         });
 
+        minVolume = settings.getInt("minimumVolume", 7);
         seekBar = (SeekBar)findViewById(R.id.seekBar);
         seekBar.setProgress(minVolume);
-        TextView minVolumeText = (TextView)findViewById(R.id.MinVolumeTextView);
-        minVolumeText.setText("Minimum Volume: " + Integer.toString(minVolume));
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -131,16 +153,35 @@ public class MainActivity extends ActionBarActivity {
         h.postDelayed(new Runnable() {
             public void run() {
                 //do something
-                h.postDelayed(this, 250);
+                h.postDelayed(this, 500);
                 AsyncMeter asMeter = new AsyncMeter();
                 asMeter.execute();
             }
         }, refreshRate);
     }
 
+    protected void onStart(){
+        super.onStart();
+
+        if (meter == null){
+            meter = new SoundMeter();
+            meter.start();
+        }
+        else
+            meter.start();
+
+        setupTextViews();
+    }
+
     protected void setupTextViews(){
         TextView refreshTextView = (TextView)findViewById(R.id.RefreshRateTextView);
-        refreshTextView.setText("Refresh Rate: " + Integer.toString(refreshRate) + "ms");
+        refreshTextView.setText("Max Volume: " + Integer.toString(maxVolume));
+
+        TextView thresholdTextView = (TextView)findViewById(R.id.amplitudeThresholdTextView);
+        thresholdTextView.setText("Amplitude Threshold: " + Integer.toString(threshold));
+
+        TextView minVolumeText = (TextView)findViewById(R.id.MinVolumeTextView);
+        minVolumeText.setText("Minimum Volume: " + Integer.toString(minVolume));
     }
 
     @Override
@@ -150,6 +191,10 @@ public class MainActivity extends ActionBarActivity {
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt("minimumVolume", minVolume);
         editor.putInt("refreshRate", refreshRate);
+        editor.putInt("maxVolume", maxVolume);
+        editor.putInt("threshold", threshold);
+
+        meter.stop();
 
         // Commit the edits!
         editor.apply();
@@ -196,7 +241,7 @@ public class MainActivity extends ActionBarActivity {
                 amplitudeCount = 0;
             }
 
-            if (previousAmplitude != 0) {
+            if (true) {
                 amplitudeCount++;
                 totalAmplitude += Double.parseDouble(result);
                 averageAmplitude = totalAmplitude / amplitudeCount;
@@ -213,8 +258,8 @@ public class MainActivity extends ActionBarActivity {
             AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
             int volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
-            if (averageAmplitude > 250) {
-                if (volume < 1.5 * minVolume)
+            if (averageAmplitude > threshold) {
+                if (volume < maxVolume)
                     volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) + 1;
             }
             else
@@ -229,7 +274,7 @@ public class MainActivity extends ActionBarActivity {
 
             TextView currentVolumeTV = (TextView)findViewById(R.id.currentVolumeTextView);
             int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            currentVolumeTV.setText("Current Volume:    \t\t\t" + Integer.toString(currentVolume));
+            currentVolumeTV.setText("Current Volume: \t\t\t\t\t" + Integer.toString(currentVolume));
         }
     }
 }

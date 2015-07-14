@@ -52,7 +52,7 @@
         android:layout_height="wrap_content"
         android:text="Reset Average"
         android:id="@+id/resetAverageButton"
-        android:layout_below="@+id/seekBar"
+        android:layout_below="@+id/amplitudeThresholdSeekBar"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="49dp" />
 
@@ -60,22 +60,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Refresh Rate: 0ms"
+        android:text="Max Volume: 0"
         android:id="@+id/RefreshRateTextView"
-        android:layout_below="@+id/resetAverageButton"
+        android:layout_below="@+id/seekBar"
         android:layout_centerHorizontal="true" />
 
     <SeekBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/refreshRateSeekBar"
+        android:id="@+id/maxVolumeSeekBar"
         android:layout_below="@+id/RefreshRateTextView"
         android:layout_marginTop="39dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:max="1000"
+        android:max="15"
         android:indeterminate="false" />
 
     <Button
@@ -86,5 +86,27 @@
         android:id="@+id/onOffButton"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Amplitude Threshold: 0"
+        android:id="@+id/amplitudeThresholdTextView"
+        android:layout_below="@+id/maxVolumeSeekBar"
+        android:layout_centerHorizontal="true" />
+
+    <SeekBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/amplitudeThresholdSeekBar"
+        android:layout_below="@+id/amplitudeThresholdTextView"
+        android:layout_marginTop="39dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:max="1000"
+        android:indeterminate="false" />
 
 </RelativeLayout>
